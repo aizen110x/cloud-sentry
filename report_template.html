@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Cloud-Sentry Report - {{TARGET}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+* {margin:0;padding:0;box-sizing:border-box}
+body {font-family:'Inter',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:30px}
+.container {max-width:1400px;margin:0 auto;background:rgba(255,255,255,0.98);border-radius:20px;box-shadow:0 30px 90px rgba(0,0,0,0.4);overflow:hidden;animation:slideUp 0.6s ease-out}
+@keyframes slideUp {from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn {from{opacity:0}to{opacity:1}}
+@keyframes pulse {0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.header {background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);color:#fff;padding:50px;text-align:center;position:relative;overflow:hidden}
+.header::before {content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);animation:pulse 4s ease-in-out infinite}
+.header h1 {font-size:3em;margin-bottom:15px;font-weight:800;position:relative;z-index:1;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
+.header .subtitle {opacity:0.95;font-size:1.3em;font-weight:400;position:relative;z-index:1}
+.summary {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:25px;padding:40px;background:#f8fafc}
+.stat-card {background:linear-gradient(145deg,#ffffff,#f8f9fa);padding:30px;border-radius:15px;box-shadow:0 4px 20px rgba(0,0,0,0.08);text-align:center;transition:all 0.3s ease;position:relative;overflow:hidden;animation:fadeIn 0.5s ease-out forwards;opacity:0}
+.stat-card:nth-child(1) {animation-delay:0.1s}.stat-card:nth-child(2) {animation-delay:0.2s}
+.stat-card:nth-child(3) {animation-delay:0.3s}.stat-card:nth-child(4) {animation-delay:0.4s}
+.stat-card:nth-child(5) {animation-delay:0.5s}.stat-card:nth-child(6) {animation-delay:0.6s}
+.stat-card::before {content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,#667eea,#764ba2);transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease}
+.stat-card:hover::before {transform:scaleX(1)}
+.stat-card:hover {transform:translateY(-5px);box-shadow:0 8px 30px rgba(0,0,0,0.15)}
+.stat-card .icon {font-size:2.5em;margin-bottom:10px;opacity:0.2}
+.stat-card .number {font-size:2.8em;font-weight:800;margin:15px 0;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-card .label {color:#64748b;text-transform:uppercase;font-size:0.85em;font-weight:600;letter-spacing:1px}
+.findings {padding:40px;background:#fff}
+.findings h2 {margin-bottom:30px;color:#1e293b;font-size:2em;font-weight:700;display:flex;align-items:center;gap:15px}
+.finding-card {background:#fff;border-left:5px solid;padding:25px;margin-bottom:20px;border-radius:12px;box-shadow:0 3px 15px rgba(0,0,0,0.08);transition:all 0.3s ease;animation:fadeIn 0.4s ease-out}
+.finding-card:hover {transform:translateX(5px);box-shadow:0 5px 25px rgba(0,0,0,0.12)}
+.finding-card.critical {border-left-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fee2e2)}
+.finding-card.low {border-left-color:#3b82f6;background:linear-gradient(135deg,#eff6ff,#dbeafe)}
+.finding-title {font-size:1.4em;font-weight:700;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;color:#1e293b}
+.risk-badge {padding:8px 18px;border-radius:25px;font-size:0.7em;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.risk-badge.critical {background:linear-gradient(135deg,#ef4444,#dc2626)}
+.risk-badge.low {background:linear-gradient(135deg,#3b82f6,#2563eb)}
+.finding-details {color:#64748b;margin-top:12px;font-size:1em;font-weight:500}
+.finding-url {background:#f1f5f9;padding:15px;border-radius:8px;font-family:monospace;margin-top:15px;word-break:break-all;font-size:0.9em;color:#475569;border:1px solid #e2e8f0}
+.footer {text-align:center;padding:30px;background:linear-gradient(135deg,#1e293b,#334155);color:#fff;font-size:1em}
+.no-findings {text-align:center;padding:60px;color:#10b981;font-size:1.5em;font-weight:600;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:15px}
+.progress-bar {width:100%;height:8px;background:#e2e8f0;border-radius:10px;overflow:hidden;margin-top:10px}
+.progress-fill {height:100%;background:linear-gradient(90deg,#10b981,#059669);border-radius:10px;transition:width 1s ease-out}
+.stats-grid {display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:30px 0}
+.mini-stat {background:#f8fafc;padding:20px;border-radius:10px;border-left:3px solid #3b82f6}
+.mini-stat .value {font-size:1.8em;font-weight:700;color:#1e293b}
+.mini-stat .label {font-size:0.9em;color:#64748b;margin-top:5px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>🔒 Cloud-Sentry Security Report</h1>
+<div class="subtitle">AWS S3 Bucket Security Assessment</div>
+</div>
+<div class="summary">
+<div class="stat-card">
+<div class="icon">🎯</div>
+<div class="label">Target</div>
+<div class="number" style="font-size:2em">{{TARGET}}</div>
+</div>
+<div class="stat-card">
+<div class="icon">🔍</div>
+<div class="label">Buckets Scanned</div>
+<div class="number" style="background:linear-gradient(135deg,#3b82f6,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent">{{TOTAL_CHECKED}}</div>
+</div>
+<div class="stat-card">
+<div class="icon">✅</div>
+<div class="label">Buckets Found</div>
+<div class="number" style="background:linear-gradient(135deg,#10b981,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent">{{TOTAL_FOUND}}</div>
+<div class="progress-bar"><div class="progress-fill" style="width:{{SUCCESS_RATE}}%"></div></div>
+</div>
+<div class="stat-card">
+<div class="icon">⚠️</div>
+<div class="label">Vulnerable</div>
+<div class="number" style="background:linear-gradient(135deg,#ef4444,#dc2626);-webkit-background-clip:text;-webkit-text-fill-color:transparent">{{TOTAL_VULNERABLE}}</div>
+</div>
+<div class="stat-card">
+<div class="icon">💻</div>
+<div class="label">Platform</div>
+<div class="number" style="font-size:1.8em">{{PLATFORM}}</div>
+</div>
+<div class="stat-card">
+<div class="icon">📅</div>
+<div class="label">Scan Date</div>
+<div class="number" style="font-size:1.3em">{{SCAN_DATE}}</div>
+<div style="font-size:0.95em;color:#64748b;margin-top:5px">{{SCAN_TIME}}</div>
+</div>
+</div>
+<div class="findings">
+<h2>📋 Security Findings</h2>
+<div class="stats-grid">
+<div class="mini-stat">
+<div class="value">{{SUCCESS_RATE}}%</div>
+<div class="label">Discovery Rate</div>
+</div>
+<div class="mini-stat" style="border-left-color:#ef4444">
+<div class="value">{{TOTAL_VULNERABLE}}/{{TOTAL_FOUND}}</div>
+<div class="label">Vulnerable / Found</div>
+</div>
+</div>
+{{FINDINGS}}
+</div>
+<div class="footer">
+<p>🔐 Generated by <strong>Cloud-Sentry v2.0</strong></p>
+<p style="margin-top:10px;font-size:0.9em;opacity:0.8">For authorized security testing only</p>
+</div>
+</div>
+</body>
+</html>
